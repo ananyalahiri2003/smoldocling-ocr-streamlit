@@ -136,7 +136,12 @@ def process_single_image(image, prompt_text="Convert this page to docling.", dev
 
     # Prepare inputs
     prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
-    inputs = processor(text=prompt, images=[image], return_tensors="pt")
+    print("DEBUG: calling processor with padding=True")
+    inputs = processor(text=prompt,
+                       images=[image],
+                       padding=True,
+                       return_tensors="pt"
+                       )
     inputs = inputs.to(device)
 
     # Generate outputs

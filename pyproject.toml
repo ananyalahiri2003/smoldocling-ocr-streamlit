@@ -2,7 +2,7 @@
 name = "smoldocling-ocr-streamlit"
 version = "0.1.0"
 description = "A Streamlit OCR app with SmolDocling"
-authors = ["Ananya Lahiri <ananyalahiri2003@yahoo.co.uk"]
+authors = ["ananyalahiri2003 <ananyalahiri2003@yahoo.co.uk>"]
 license = "MIT"
 readme = "README.md"
 packages = [
@@ -10,16 +10,17 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10, <3.13"
-streamlit = "^1.21.0"
-torch = "^2.0.1"
-accelerate = "^0.21.0"
-transformers = "^4.34.0"
-docling-core = "^2.28.1"
-huggingface-hub = "^0.16.4"
-Pillow = "^10.0.0"
-python-dotenv = "^1.0.0"
-pyngrok = "^6.1.0"
+python          = ">=3.10,<3.13"
+streamlit       = "^1.21.0"       # Streamlit 1.21.x works fine with any of these model-loading calls
+torch           = "2.2.1"         # PyTorch ≥2.0.0 is required by Transformers :contentReference[oaicite:0]{index=0}
+accelerate      = "^0.21.0"       # No strict coupling; 0.21.x has been used in HF examples
+transformers    = "4.48.2"        # the version you asked for
+huggingface-hub = ">=0.10.0,<1.0" # Transformers pins HF-hub to <1.0; ^0.16.4 or bump up to ^0.18.1 both work :contentReference[oaicite:1]{index=1}
+docling-core    = "^2.28.1"       # latest published docling-core
+Pillow          = "^10.0.0"       # standard imaging library
+python-dotenv   = "^1.0.0"        # for loading your .env
+pyngrok         = "^6.1.0"        # for tunneling in Colab or Docker
+numpy           = ">=1.21,<2.0"
 
 [build-system]
 requires = ["poetry-core"]
