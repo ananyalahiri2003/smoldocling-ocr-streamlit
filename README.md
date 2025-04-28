@@ -11,23 +11,27 @@ _Note: As of 28Apr only single image upload and extraction is tested._
 
 ### Clone the repository
 git clone git@github.com:ananyalahiri2003/smoldocling-ocr-streamlit.git
+
 cd src
-
-### Create .env 
-Under src/ create `.env` file with 
-
-HF_TOKEN={your_hf_token}
 
 ### Install dependencies 
 `poetry lock --no-update`
 
 `poetry install` 
 
+### Create .env 
+Under src/ create `.env` file with 
+
+HF_TOKEN={your_hf_token}
+
 All dependencies in pyproject.toml file. 
 
 
 ## Start the app
+`poetry shell`
+
 `streamlit run src/app.py`
+
 This opens up streamlit interface on port 8501 and allows you to process. 
 
 #### NOTE 
