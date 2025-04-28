@@ -19,12 +19,12 @@ cd src
 
 `poetry install` 
 
+All dependencies in pyproject.toml file. 
+
 ### Create .env 
 Under src/ create `.env` file with 
 
 HF_TOKEN={your_hf_token}
-
-All dependencies in pyproject.toml file. 
 
 
 ## Start the app
