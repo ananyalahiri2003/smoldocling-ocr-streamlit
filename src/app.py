@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import re
 import time
 import torch
 import tempfile
@@ -156,16 +157,25 @@ def process_single_image(image, prompt_text="Convert this page to docling.", dev
 
     prompt_length = inputs.input_ids.shape[1]
     trimmed_generated_ids = generated_ids[:, prompt_length:]
-    doctags = processor.batch_decode(
+    raw_doctags = processor.batch_decode(
         trimmed_generated_ids,
         skip_special_tokens=False,
     )[0].lstrip()
 
-    # Clean the output
-    doctags = doctags.replace("<end_of_utterance>", "").strip()
+    # Clean the raw doctags
+    cleaned = raw_doctags.replace("<end_of_utterance>", "").strip()
+    # Handle <chart> tags and prune <loc> markers
+    if "<chart>" in cleaned:
+        cleaned = (
+            cleaned
+            .replace("<chart>", "<otsl>")
+            .replace("</chart>", "</otsl>")
+        )
+        # Remove any embedded XML between the last loc tag and the next element
+        cleaned = re.sub(r'(<loc_\d+>)(?!.*\1)<[^>]+>', r'\1', cleaned)
 
-    # Populate document
-    doctags_doc = DocTagsDocument.from_doctags_and_image_pairs([doctags], [image])
+    # Build the DocTagsDocument
+    doctags_doc = DocTagsDocument.from_doctags_and_image_pairs([cleaned], [image])
 
     # Create a docling document
     doc = DoclingDocument(name="Document")
@@ -183,7 +193,7 @@ def process_single_image(image, prompt_text="Convert this page to docling.", dev
     processing_time = time.time() - start_time
 
     return {
-        "doctags": doctags,
+        "doctags": cleaned,
         "markdown": md_content,
         "html": html_content,
         "text": plain_text,
@@ -402,6 +412,14 @@ def main():
                 try:
                     image = Image.open(uploaded_file).convert("RGB")
                     st.image(image, caption="Uploaded Image", width=250)
+                    # Try to save the image
+                    DATA_DIR = os.path.join(os.getcwd(), "data")
+                    os.makedirs(DATA_DIR, exist_ok=True)
+                    save_path = os.path.join(DATA_DIR, uploaded_file.name)
+                    with open(save_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+                    st.info(f"Uploaded image saved to: {save_path}")
+                    # image saved here
                 except Exception as e:
                     st.error(f"Error loading image: {str(e)}")
         else:
