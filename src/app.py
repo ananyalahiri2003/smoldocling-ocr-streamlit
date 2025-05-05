@@ -140,7 +140,7 @@ def process_single_image(image, prompt_text="Convert this page to docling.", dev
     print("DEBUG: calling processor with padding=True")
     inputs = processor(text=prompt,
                        images=[image],
-                       padding=True,
+                       # padding=True,
                        return_tensors="pt"
                        )
     inputs = inputs.to(device)
@@ -161,44 +161,24 @@ def process_single_image(image, prompt_text="Convert this page to docling.", dev
         trimmed_generated_ids,
         skip_special_tokens=False,
     )[0].lstrip()
+    logger.info("Raw DocTags: %s", raw_doctags)
 
-    # Clean the raw doctags
-    cleaned = raw_doctags.replace("<end_of_utterance>", "").strip()
-    # Handle <chart> tags and prune <loc> markers
-    if "<chart>" in cleaned:
-        cleaned = (
-            cleaned
-            .replace("<chart>", "<otsl>")
-            .replace("</chart>", "</otsl>")
-        )
-        # Remove any embedded XML between the last loc tag and the next element
-        cleaned = re.sub(r'(<loc_\d+>)(?!.*\1)<[^>]+>', r'\1', cleaned)
+    # Strip model-specific tokens
+    doctags = raw_doctags.replace("<end_of_utterance>", "").strip()
 
-    # Build the DocTagsDocument
-    doctags_doc = DocTagsDocument.from_doctags_and_image_pairs([cleaned], [image])
-
-    # Create a docling document
+    # md = f"$$\n{doctags}\n$$"
+    # Build document
+    doctags_doc = DocTagsDocument.from_doctags_and_image_pairs([doctags], [image])
     doc = DoclingDocument(name="Document")
     doc.load_from_doctags(doctags_doc)
 
-    # Export as markdown
-    md_content = doc.export_to_markdown()
+    # Export
+    md = doc.export_to_markdown()
+    txt = doc.export_to_text()
+    html = doc.export_to_html()
+    logger.info("md len=%d, txt len=%d, html len=%d", len(md), len(txt), len(html))
 
-    # Export as HTML
-    html_content = doc.export_to_html()
-
-    # Get plain text
-    plain_text = doc.export_to_text()
-
-    processing_time = time.time() - start_time
-
-    return {
-        "doctags": cleaned,
-        "markdown": md_content,
-        "html": html_content,
-        "text": plain_text,
-        "processing_time": processing_time
-    }
+    return {"doctags": doctags, "markdown": md, "text": txt, "html": html, "processing_time": time.time() - start_time}
 
 
 def process_batch(images, prompt_text, device, progress_bar=None):
