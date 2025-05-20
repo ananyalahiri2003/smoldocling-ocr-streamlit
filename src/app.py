@@ -112,7 +112,7 @@ def optimize_image(image, max_size=1600):
     return image
 
 
-def process_single_image(image, prompt_text="Convert this page to docling.", device="cpu", show_progress=None):
+def process_single_image(image, prompt_text="Convert this page to docling.", device="cpu", show_progress=None, max_new_tokens=1500):
     """Process a single image"""
     global processor, model
 
@@ -149,7 +149,7 @@ def process_single_image(image, prompt_text="Convert this page to docling.", dev
     with torch.no_grad():  # Add this to save memory
         generated_ids = model.generate(
             **inputs,
-            max_new_tokens=1500,  # Increased for better results
+            max_new_tokens=max_new_tokens,  # Increased for better results
             do_sample=False,  # Deterministic generation
             num_beams=1,  # Simple beam search
             temperature=1.0,  # No temperature scaling
@@ -190,7 +190,7 @@ def process_batch(images, prompt_text, device, progress_bar=None):
         if progress_bar:
             progress_bar.progress((idx) / total, text=f"Processing image {idx + 1}/{total}")
 
-        result = process_single_image(image, prompt_text, device)
+        result = process_single_image(image, prompt_text, device, max_new_tokens=max_new_tokens)
         results.append(result)
 
         if progress_bar:
@@ -377,6 +377,15 @@ def main():
                 min_value=800,
                 max_value=3200,
                 value=1600,
+                step=100,
+                help="Larger values may improve OCR quality but use more memory"
+            )
+
+            max_new_tokens = st.slider(
+                "Max new tokens generated",
+                min_value=1024,
+                max_value=10240,
+                value=1500,
                 step=100,
                 help="Larger values may improve OCR quality but use more memory"
             )
